@@ -1,6 +1,5 @@
 import csv
 import os
-import re
 
 import scipy.ndimage as nd
 from convert_sim_ims import *

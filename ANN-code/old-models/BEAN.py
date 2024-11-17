@@ -14,7 +14,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 import pandas as pd
 
 # Load the data
-data = pd.read_csv("more_features_noisy.csv")
+data = pd.read_csv("../more_features_noisy.csv")
 
 
 # Extract species label from 'name' column: 0 for carbon, 1 for fluorine

@@ -11,7 +11,7 @@ import scipy.stats
 from numpy.linalg import svd
 from scipy.stats import skew, kurtosis
 
-with open("matplotlibrc.json", "r") as file:
+with open("../../matplotlibrc.json", "r") as file:
     custom_params = json.load(file)
 
 plt.rcParams.update(custom_params)
