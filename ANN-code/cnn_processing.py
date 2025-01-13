@@ -37,7 +37,7 @@ def resize_pad_image(image, target_size=(224, 224)):
     return resized_image
 
 
-def pad_image_2(image, target_size=(415, 559)):
+def pad_image_2(image, target_size=(572, 768)):
     """
     Pad an image to a target size by embedding it in a larger frame with random offsets.
 
@@ -46,7 +46,7 @@ def pad_image_2(image, target_size=(415, 559)):
     image : np.ndarray
         The input image to be padded.
     target_size : tuple of int, optional
-        The target size for the padded image, specified as (height, width). Default is (415, 559).
+        The target size for the padded image, specified as (height, width). Default is (572, 768).
 
     Returns:
     -------
@@ -64,7 +64,7 @@ def pad_image_2(image, target_size=(415, 559)):
         small_height, small_width = small_image.shape[:2]
         target_height, target_width = target_size
 
-        # Create an empty frame filled with zeros (black) of size (415, 559)
+        # Create an empty frame filled with zeros (black) of size (572, 768)
         target_frame = np.zeros((target_height, target_width), dtype=small_image.dtype)
 
         # Calculate maximum offsets so the small image fits inside the target frame
@@ -76,7 +76,9 @@ def pad_image_2(image, target_size=(415, 559)):
         x_offset = random.randint(0, max_x_offset)
 
         # Insert the small image into the target frame at the random offset
-        target_frame[y_offset:y_offset + small_height, x_offset:x_offset + small_width] = small_image
+        target_frame[
+            y_offset : y_offset + small_height, x_offset : x_offset + small_width
+        ] = small_image
 
         return target_frame
 
@@ -202,7 +204,7 @@ def noise_adder(image, m_dark=None, example_dark_list=None):
     return image
 
 
-def pad_image(image, target_size=(415, 559)):
+def pad_image(image, target_size=(572, 768)):
     """
     Pad an image to a target size by embedding it in a larger frame with random offsets.
 
@@ -211,7 +213,7 @@ def pad_image(image, target_size=(415, 559)):
     image : np.ndarray
         The input image to be padded.
     target_size : tuple of int, optional
-        The target size for the padded image, specified as (height, width). Default is (415, 559).
+        The target size for the padded image, specified as (height, width). Default is (572, 768).
 
     Returns:
     -------
@@ -221,7 +223,7 @@ def pad_image(image, target_size=(415, 559)):
     small_height, small_width = image.shape[:2]
     target_height, target_width = target_size
 
-    # Create an empty frame filled with zeros (black) of size (415, 559)
+    # Create an empty frame filled with zeros (black) of size (572, 768)
     target_frame = np.zeros((target_height, target_width), dtype=image.dtype)
 
     # Calculate maximum offsets so the small image fits inside the target frame
@@ -233,7 +235,9 @@ def pad_image(image, target_size=(415, 559)):
     x_offset = random.randint(0, max_x_offset)
 
     # Insert the small image into the target frame at the random offset
-    target_frame[y_offset:y_offset + small_height, x_offset:x_offset + small_width] = image
+    target_frame[
+        y_offset : y_offset + small_height, x_offset : x_offset + small_width
+    ] = image
 
     return target_frame
 
@@ -256,22 +260,22 @@ def parse_function(file_path, m_dark, example_dark_list_unbinned, binning=1):
     Returns:
     -------
     image : np.ndarray
-        A preprocessed 3D tensor representing the image, with shape (415, 559, 1).
+        A preprocessed 3D tensor representing the image, with shape ((572, 768), 1).
     label : int
         The label extracted from the file name: 0 for 'C' (carbon), 1 for 'F' (fluorine).
     """
-    file_path_str = file_path.numpy().decode('utf-8')
+    file_path_str = file_path.numpy().decode("utf-8")
 
     # Load the image data from the .npy file
     image = np.load(file_path_str)
 
     # Extract label from file name ('C' or 'F')
-    label = 0 if 'C' in os.path.basename(file_path_str) else 1  # Assume 'C' maps to 0 and 'F' maps to 1
+    label = (
+        0 if "C" in os.path.basename(file_path_str) else 1
+    )  # Assume 'C' maps to 0 and 'F' maps to 1
 
     if binning != 1:
-        example_dark_list = [
-            bin_image(i, binning) for i in example_dark_list_unbinned
-        ]
+        example_dark_list = [bin_image(i, binning) for i in example_dark_list_unbinned]
 
     else:
         example_dark_list = example_dark_list_unbinned
@@ -282,7 +286,9 @@ def parse_function(file_path, m_dark, example_dark_list_unbinned, binning=1):
     image = pad_image(image)
 
     image = image.astype(np.float32)
-    image = np.expand_dims(image, axis=-1)  # shape becomes (415, 559, 1) for grayscale
+    image = np.expand_dims(
+        image, axis=-1
+    )  # shape becomes ((572, 768), 1) for grayscale
 
     return image, label
 
@@ -326,7 +332,9 @@ def load_data(base_dirs, batch_size, example_dark_list, m_dark, data_frac=1.0):
         fraction_to_remove = 1 - data_frac
         num_to_remove = int(len(file_list) * fraction_to_remove)
         indices_to_remove = set(random.sample(range(len(file_list)), num_to_remove))
-        filtered_list = [x for i, x in enumerate(file_list) if i not in indices_to_remove]
+        filtered_list = [
+            x for i, x in enumerate(file_list) if i not in indices_to_remove
+        ]
 
     # create a tensorflow dataset from the list of directories
     dataset = tf.data.Dataset.from_tensor_slices(file_list)
@@ -334,16 +342,22 @@ def load_data(base_dirs, batch_size, example_dark_list, m_dark, data_frac=1.0):
     m_dark_tensor = tf.convert_to_tensor(m_dark, dtype=tf.float32)
     example_dark_tensor = tf.convert_to_tensor(example_dark_list, dtype=tf.float32)
     # apply the parsing function to convert the raw file path, master dark and example dark into data
-    dataset = dataset.map(lambda file_path: tf.py_function(func=parse_function,
-                                                           inp=[file_path, m_dark_tensor, example_dark_tensor],
-                                                           Tout=(tf.float32, tf.int32)),
-                          num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(
+        lambda file_path: tf.py_function(
+            func=parse_function,
+            inp=[file_path, m_dark_tensor, example_dark_tensor],
+            Tout=(tf.float32, tf.int32),
+        ),
+        num_parallel_calls=tf.data.experimental.AUTOTUNE,
+    )
 
     # set output shapes to avoid rank issues
-    dataset = dataset.map(lambda image, label: (
-        tf.ensure_shape(image, (415, 559, 1)),
-        tf.ensure_shape(label, ())
-    ))
+    dataset = dataset.map(
+        lambda image, label: (
+            tf.ensure_shape(image, (572, 768, 1)),
+            tf.ensure_shape(label, ()),
+        )
+    )
 
     # batch the dataset into chosen size
     dataset = dataset.batch(batch_size)
