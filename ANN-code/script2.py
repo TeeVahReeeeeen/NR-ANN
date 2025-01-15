@@ -9,3 +9,4 @@ output_csv = "features_im3.csv"
 events = yield_events(base_dirs)
 
 event_processor(events, chunk_size, output_csv, dark_dir)
+#test
